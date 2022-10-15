@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+  #backend api
+  api:
+    container_name: api_container
+    build: ./
+    working_dir: /usr/src/api_app
+    ports:
+      - "3001:3001"
+    command: npm run watch
+      - .:/usr/src/api_app
+    environment:
+      PORT: 3001
