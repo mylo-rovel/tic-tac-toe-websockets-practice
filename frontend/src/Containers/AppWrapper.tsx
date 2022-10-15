@@ -1,16 +1,30 @@
-import { useEffect, useContext } from 'react';
+import React from 'react';
 import { SocketContext } from '../Utilities/Classes/SocketClient';
 import App from './App';
 
 function AppWrapper() {
-  const socketClient = useContext(SocketContext);
-  console.log(socketClient)
+  // const [scktClient] = useState(new SocketClient(API_ENDPOINT));
+  // const [scktClient] = useState(io(API_ENDPOINT));
+  const scktClient = React.useContext(SocketContext);
+  console.log("connect");
 
-  useEffect(() => {
-  },[socketClient]);
-  
-  console.log("bbb")
-  return ( <App /> );
+  React.useEffect(() => {
+    return () => {
+      // console.log("disconnect");
+      // scktClient.disconnectSocket();
+      // scktClient.closeSocket();
+    };
+  }, [scktClient]);
+
+  return ( 
+  <>
+    {/* <SocketContext.Provider value = {scktClient}> */}
+      <button onClick={() => scktClient.emitEvent("testing1", {palta:2})}>
+        tocameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+      </button>
+      <App />
+    {/* </SocketContext.Provider> */}
+  </> );
 }
 
 export default AppWrapper;

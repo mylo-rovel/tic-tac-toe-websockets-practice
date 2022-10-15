@@ -14,7 +14,6 @@ function App() {
   // eslint-disable-next-line no-use-before-define
   },[container]); // eslint-disable-line
   
-  console.log("ccc")
   return (
     <div className="App">
       {container}
