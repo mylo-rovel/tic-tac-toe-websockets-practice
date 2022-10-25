@@ -1,12 +1,12 @@
 import React from 'react';
 import { Socket } from 'socket.io-client';
-import './SearchBar.css';
+import './LowBody.css';
 
 interface IProps {
     socketClient: Socket
 }
 
-export function SearchBar({socketClient}:IProps) {
+export function LowBody({socketClient}:IProps) {
     const [roomName, setRoomName] = React.useState("");
     const [wasGameStarted, setWasGameStarted] = React.useState(false);
     const [gameState, setGameState] = React.useState("");
@@ -47,9 +47,12 @@ export function SearchBar({socketClient}:IProps) {
         setIsNameInvalid(false);
         setIsNameAccepted(true);
     });
-    socketClient.on("opponentVictory", ({winnerID}:{winnerID:string}) => {
+    socketClient.on("opponentVictory", () => {
         setGameState("JUEGO TERMINADO");
     })
+    socketClient.on("gameOverForTie", () => {
+        setGameState("JUEGO TERMINADO");
+    })    
 
     //? This two handlers manage the replay functionality
     socketClient.on("replayAccepted", () => {

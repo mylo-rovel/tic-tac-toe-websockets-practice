@@ -20,19 +20,33 @@ export   class GameBoard {
       this.turnMssgSetter = turnMssgSetter;
     }
 
+    private emitTie() {
+      this.socketClient.emit("gameReachedTie");
+      this.gameIsOver = true;
+    }
+
+    private gameReachedATie () {
+      const cellsArr = document.querySelectorAll('.game-cell');
+      let availableCells = 0;
+      cellsArr.forEach(item => { availableCells += (item.textContent === '-') ? 1 : 0;});
+      return (availableCells === 0);
+    }
+
     private emitVictory() {
       this.socketClient.emit("playerVictory");
+      this.gameIsOver = true;
     }
     
     public listenToEvents() {
       this.socketClient.on("startGame", (firstPlayerID:string) => {
         if (this.socketClient.id === firstPlayerID){
           this.playerHasToWait = false;
-          this.player = new Player("A");
-          this.turnMssgSetter("ES TU TURNO");
+          this.player = new Player("🐸");
+          // 
+          this.turnMssgSetter(`ES TU TURNO: ${this.player.userSymbol}`);
         }
         else {          
-          this.player = new Player("B");
+          this.player = new Player("🍟");
           this.turnMssgSetter("TURNO OPONENTE");
         }
       })
@@ -58,7 +72,12 @@ export   class GameBoard {
       this.socketClient.on("playerCanPlay", () => {
         if (this.gameIsOver) return;
         this.playerHasToWait = false;
-        this.turnMssgSetter("ES TU TURNO");
+        this.turnMssgSetter(`ES TU TURNO: ${this.player.userSymbol}`);
+      })
+
+      this.socketClient.on("gameOverForTie", () => {
+        this.gameIsOver = true;
+        this.turnMssgSetter(`EMPATE`);
       })
     }
 
@@ -71,7 +90,7 @@ export   class GameBoard {
     }
 
     private playTheCell(eventObj:React.MouseEvent<HTMLDivElement, MouseEvent>): boolean {
-      //! ----------------------------------------------------------------------------------
+      //! ----------------------------------------------------------------------------------      
       // if the game is over do nothing
       if (this.gameIsOver) {alert("El juego acabó"); return false;}
       if (this.playerHasToWait) return false;
@@ -93,6 +112,9 @@ export   class GameBoard {
   
       if (this.gameIsOver) {
         this.emitVictory();
+      }
+      else if (this.gameReachedATie()) {
+        this.emitTie();
       }
       return true;
     }

@@ -4,3 +4,15 @@
   font-family: 'Montserrat', sans-serif;
   font-weight: bolder;
 }
+
+body {
+  background-color: rgb(0, 7, 19);
+}
+
+button, input {
+  color: black;
+}
+
+p {
+  color: white;
+}

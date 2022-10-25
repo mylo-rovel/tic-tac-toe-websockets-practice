@@ -106,8 +106,14 @@ export class SocketController {
 
             socket.on("replayRequest", () => {                
                 const roomName = getRoomName(socket.id, this.clientsRooms)
-                console.log("Replay in the same room accepted");
+                console.log("Replay in the same room accepted", roomName);
                 this.socketServer.in(roomName).emit("replayAccepted")
+            })
+
+            socket.on("gameReachedTie", () => {                
+                const roomName = getRoomName(socket.id, this.clientsRooms)
+                console.log(`${roomName} has reached to a tie`);
+                this.socketServer.in(roomName).emit("gameOverForTie")
             })
 
             //? Ending of connection
