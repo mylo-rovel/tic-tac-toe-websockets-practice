@@ -1,41 +1,99 @@
 import { Player } from './Player';
+import { Socket } from "socket.io-client";
+
+interface IMovementProps {
+  i_pos: number;
+  j_pos: number;
+  userSymbol: string;
+}
 
 export   class GameBoard {
     private gameIsOver: boolean = false;
-    private playerTurn: 1 | -1 = 1; // this will switch between -1 and 1
     private fieldSize = 3;
-    private playerA: Player;
-    private playerB: Player;
-    public turnsQuantity = 0;
+    private player: Player = new Player("");;
+    private socketClient: Socket
+    private playerHasToWait = true;
+    private turnMssgSetter: React.Dispatch<React.SetStateAction<string>>;
 
-    constructor(playerA:Player, playerB:Player, fieldSize:number = 3){
-      this.playerA = playerA;
-      this.playerB = playerB;
-      this.fieldSize = fieldSize;
+    constructor(socketClient: Socket, turnMssgSetter: React.Dispatch<React.SetStateAction<string>>){
+      this.socketClient = socketClient;
+      this.turnMssgSetter = turnMssgSetter;
     }
 
-    private scoreAPoint(eventObj:React.MouseEvent<HTMLDivElement, MouseEvent>): boolean {
+    private emitVictory() {
+      this.socketClient.emit("playerVictory");
+    }
+    
+    public listenToEvents() {
+      this.socketClient.on("startGame", (firstPlayerID:string) => {
+        if (this.socketClient.id === firstPlayerID){
+          this.playerHasToWait = false;
+          this.player = new Player("A");
+          this.turnMssgSetter("ES TU TURNO");
+        }
+        else {          
+          this.player = new Player("B");
+          this.turnMssgSetter("TURNO OPONENTE");
+        }
+      })
+
+      this.socketClient.on("opponentHasLeft", () => {
+        window.location.reload();
+      })
+
+      this.socketClient.on("opponentVictory", () => {
+        this.gameIsOver = true;
+      })
+
+      this.socketClient.on("waitUntilOppReady", () => {
+        if (this.gameIsOver) return;
+        this.playerHasToWait = true;
+        this.turnMssgSetter("TURNO OPONENTE");
+      })
+
+      this.socketClient.on("opponentMovement", (oppMove:IMovementProps) => {
+        this.registerOpponentMovement(oppMove);
+      })
+
+      this.socketClient.on("playerCanPlay", () => {
+        if (this.gameIsOver) return;
+        this.playerHasToWait = false;
+        this.turnMssgSetter("ES TU TURNO");
+      })
+    }
+
+    private registerOpponentMovement(oppMove: IMovementProps) {
+      if (this.player.userSymbol === oppMove.userSymbol) return;
+      const cellToUse = document.getElementById(`${oppMove.i_pos}-${oppMove.j_pos}`);
+      if (cellToUse === null) return;
+      cellToUse.textContent = oppMove.userSymbol;
+      this.socketClient.emit("oppMoveReady");
+    }
+
+    private playTheCell(eventObj:React.MouseEvent<HTMLDivElement, MouseEvent>): boolean {
+      //! ----------------------------------------------------------------------------------
       // if the game is over do nothing
       if (this.gameIsOver) {alert("El juego acabó"); return false;}
+      if (this.playerHasToWait) return false;
 
       const currentCell = eventObj.currentTarget;
       const currentCellPos = currentCell.id.split("-");
       const [i_pos, j_pos] = [parseInt(currentCellPos[0]), parseInt(currentCellPos[1])];
 
       if(currentCell.textContent !== "-") {return false;}
-      
-      const currentPlayer = (this.playerTurn === 1) ? this.playerA : this.playerB;
-      const currentPlayerSymbol = (this.playerTurn === 1) ? "A" : "B";
+      //! ----------------------------------------------------------------------------------
+
+      //* after all checks we are sure that the movement can be emitted
+      const movementProps:IMovementProps = {i_pos, j_pos, userSymbol: this.player.userSymbol};
+      this.socketClient.emit("playerMovement", movementProps);
 
       // this function returns a boolean => if a player just won, we'll get true
-      this.gameIsOver = currentPlayer.markAPoint(i_pos, j_pos);
-      currentCell.textContent = currentPlayerSymbol;
+      this.gameIsOver = this.player.markAPoint(i_pos, j_pos);
+      currentCell.textContent = this.player.userSymbol;
   
       if (this.gameIsOver) {
-        alert(`El jugador ${currentPlayer.userID} ganó`);
+        this.emitVictory();
       }
-      //switch player
-      this.playerTurn *= -1
       return true;
     }
 
@@ -48,7 +106,7 @@ export   class GameBoard {
           const gameCell = <div 
             id={`${i}-${j}`} 
             key={`${i}-${j}`} 
-            onClick={(eventObj) => this.scoreAPoint(eventObj)} 
+            onClick={(eventObj) => this.playTheCell(eventObj)} 
             className="game-cell">
               -
             </div>

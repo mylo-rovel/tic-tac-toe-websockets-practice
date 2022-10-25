@@ -2,10 +2,10 @@ export class Player {
     private fieldSize:number;
     public userBoard: number[][] = [[0,0,0],[0,0,0],[0,0,0]];
     private userPoints: number = 0;
-    public userID: string;
+    public userSymbol: string;
     
-    constructor(userID:string, fieldSize:number = 3) {
-      this.userID = userID;
+    constructor(userSymbol:string, fieldSize:number = 3) {
+      this.userSymbol = userSymbol;
       this.fieldSize = fieldSize;
     }
     public markAPoint(i_pos:number,j_pos:number): boolean {
@@ -29,10 +29,10 @@ export class Player {
           diag1Sum += this.userBoard[i][i];
           diag2Sum += this.userBoard[this.fieldSize - 1 - i][i];
         }
-        console.log(diag1Sum, diag2Sum)
+        // console.log(diag1Sum, diag2Sum)
       }
       if (rowSum === 3 || columnSum === 3 || diag1Sum === 3 || diag2Sum === 3) {
-        console.log("3 points " + this.userID);
+        // console.log("3 points " + this.userSymbol);
         return true;
       }
       this.userPoints++;

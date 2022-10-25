@@ -1,8 +1,35 @@
+.App {
+    width: fit-content;
+    margin: 0 auto;
+    padding-top: 1rem;
+}
+
+.App .bottom-btns-container {
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 1rem;
+    width: fit-content;
+    height: fit-content;
+}
+
+
+.App .bottom-btns-container > button {
+    padding: 0.5rem 1.5rem;
+}
+
+
+#game-status-message {
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 1.5rem;
+}
+
 #game-board {
     background-color: black;
     color:white;
     width: fit-content;
-    margin: 2rem auto;
+    margin: 0 auto;
+    margin-top: 1rem;
     font-size: 2rem;
 }
 .game-board-row {
@@ -11,8 +38,8 @@
 }
 
 .game-cell {
-    width: 5rem;
-    height: 5rem;
+    width: 3rem;
+    height: 3rem;
     padding: 2rem;
     border: 1px solid white;
     display: grid;
